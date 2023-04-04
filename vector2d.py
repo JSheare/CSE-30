@@ -9,20 +9,36 @@ class Vector2D:
         self.thresh = 0.000001
 
     def __add__(self, other):
-        return Vector2D()
+        if type(other) == type(self):
+            x_new = self.x + other.x
+            y_new = self.y + other.y
+            return Vector2D(x_new, y_new)
+        else:
+            raise TypeError('TypeError: unsupported operand type')
 
     def __sub__(self, other):
-        return Vector2D()
+        if type(other) == type(self):
+            x_new = self.x - other.x
+            y_new = self.y - other.y
+            return Vector2D(x_new, y_new)
+        else:
+            raise TypeError('TypeError: unsupported operand type')
 
     def __neg__(self):
-        return Vector2D()
+        x_new = self.x * -1
+        y_new = self.y * -1
+        return Vector2D(x_new, y_new)
 
     def __mul__(self, scalar):
-        return Vector2D()
+        x_new = self.x * scalar
+        y_new = self.y * scalar
+        return Vector2D(x_new, y_new)
 
     def __div__(self, scalar):
         if scalar != 0:
-            return Vector2D()
+            x_new = self.x/scalar
+            y_new = self.y/scalar
+            return Vector2D(x_new, y_new)
         else:
             return None
 
@@ -37,10 +53,28 @@ class Vector2D:
         return False
 
     def __ge__(self, other):
-        return
+        if type(other) == type(self):
+            mag = self.magnitude()
+            other_mag = other.magnitude()
+            if mag >= other_mag:
+                return True
+            else:
+                return False
+
+        else:
+            raise TypeError('TypeError: unsupported operand type')
 
     def __lt__(self, other):
-        return
+        if type(other) == type(self):
+            mag = self.magnitude()
+            other_mag = other.magnitude()
+            if mag < other_mag:
+                return True
+            else:
+                return False
+
+        else:
+            raise TypeError('TypeError: unsupported operand type')
 
     def __hash__(self):
         return id(self)
@@ -49,7 +83,7 @@ class Vector2D:
         return "<" + str(self.x) + ", " + str(self.y) + ">"
 
     def magnitudeSquared(self):
-        return
+        return self.x**2 + self.y**2
 
     def magnitude(self):
         return math.sqrt(self.magnitudeSquared())
@@ -57,18 +91,26 @@ class Vector2D:
     def normalize(self):
         mag = self.magnitude()
         if mag != 0:
-            return
-
-        return None
+            x_new = self.x/mag
+            y_new = self.y/mag
+            return Vector2D(x_new, y_new)
+        else:
+            return None
 
     def dot(self, other):
-        return
+        if type(other) == type(self):
+            x_new = self.x * other.x
+            y_new = self.y * other.y
+            return Vector2D(x_new, y_new)
+        else:
+            raise TypeError('TypeError: unsupported operand type')
 
     def copy(self):
-        return Vector2D()
+        return Vector2D(self.x, self.y)
+
 
 if __name__ == '__main__':
-v1 = Vector2D(2, 3)
-v2 = Vector2D(0.5, -1.5)
-print(f'The sum of {v1} and {v2} is {v1 + v2}')
-print(f'The dot product of {v1} and {v2} is {v1.dot(v2)}')
+    v1 = Vector2D(2, 3)
+    v2 = Vector2D(0.5, -1.5)
+    print(f'The sum of {v1} and {v2} is {v1 + v2}')
+    print(f'The dot product of {v1} and {v2} is {v1.dot(v2)}')
