@@ -12,7 +12,6 @@ class Complex:
         return 'Complex(%s, %s)' % (self.real, self.imag)
 
         # For call to str(). Prints readable form
-
     def __str__(self):
         if self.imag < 0:
             return '%s - %si' % (self.real, self.imag * (-1))
@@ -30,24 +29,46 @@ class Complex:
         else:
             raise TypeError('TypeError: unsupported operand type')
 
-            # use the equation: (x1+y1*i) - (x2+y2*i)  = (x1-x2)+(y1-y2)*i
-
+    # use the equation: (x1+y1*i) - (x2+y2*i)  = (x1-x2)+(y1-y2)*i
     # where x1, x2 are real parts and y1, y2 are imaginary parts of two numbers
     def __sub__(self, other):
-        pass
+        if type(other) == type(self):
+            real = self.real - other.real
+            imag = self.imag - other.imag
+            return Complex(real, imag)
+        else:
+            raise TypeError('TypeError: unsupported operand type')
 
     # use the equation:(x1+y1*i)*(x2+y2*i) = (x1*x2-y1*y2)+(x1*y2+y1*x2)*i
     # where x1, x2 are real parts and y1, y2 are imaginary parts of two numbers
     def __mul__(self, other):
-        pass
+        if type(other) == type(self):
+            real = self.real * other.real - self.imag * other.imag
+            imag = self.real * other.imag + self.imag * other.real
+            return Complex(real, imag)
+        else:
+            raise TypeError('TypeError: unsupported operand type')
 
     # use the equation:(x1+y1*i)/(x2+y2*i) = [(x1*x2+y1*y2)+(y1*x2-x1*y2)*i] /(x2*x2+y2*y2)
     # where x1, x2 are real parts and y1, y2 are imaginary parts of two numbers
     def __truediv__(self, other):
-        pass
+        if type(other) == type(self):
+            real = self.real * other.real + self.imag * other.imag
+            imag = self.imag * other.real - self.real * other.imag
+            mag_sq = other.real**2 + other.imag**2
+            return Complex(real/mag_sq, imag/mag_sq)
+        else:
+            raise TypeError('TypeError: unsupported operand type')
 
     def __eq__(self, other):
-        pass
+        if type(other) == type(self):
+            if float(self.real) == float(other.real) and float(self.imag) == float(other.imag):
+                return True
+            else:
+                return False
+
+        else:
+            raise TypeError('TypeError: unsupported operand type')
 
 
 # Driver program to test the class
