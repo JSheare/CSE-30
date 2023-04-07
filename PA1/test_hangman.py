@@ -42,10 +42,10 @@ if __name__ == '__main__':
     half1 = "2: ['ad']\n3: ['bat']\n4: ['card']\n5: ['dress']\n6: ['engine']\n7: ['T-shirt']\n"
     half2 = "8: ['gasoline']\n9: ['gathering']\n10: ['evaluation']\n11: ['self-esteem']\n12: ['unemployment']\n"
     dict_output_standard = half1 + half2
-    sys.stdout = io.StringIO()  # redirect stdout
+    sys.stdout = io.StringIO()
     hangman.print_dictionary(dictionary)
     dict_output = sys.stdout.getvalue()
-    sys.stdout = stdout  # restore stdout
+    sys.stdout = stdout
     assert dict_output == dict_output_standard
 
     # test print_display()
@@ -54,10 +54,10 @@ if __name__ == '__main__':
     lives = 2
     original_lives = 2
     display_standard = f'Letters chosen: \n__  __  __   lives: 2 OO\n'
-    sys.stdout = io.StringIO()  # redirect stdout
+    sys.stdout = io.StringIO()
     hangman.print_display(letters_chosen, display_list, lives, original_lives)
     display_output = sys.stdout.getvalue()
-    sys.stdout = stdout  # restore stdout
+    sys.stdout = stdout
     assert display_output == display_standard
 
     print('Everything looks good! No assertion errors!')
