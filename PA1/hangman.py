@@ -1,6 +1,6 @@
 # assignment: programming assignment 1
 # author: Jacob Shearer
-# date: 4/7/2023
+# date: 4/12/2023
 # file: hangman.py is a program that plays the popular 'hangman' game. Users try to determine what a randomly-chosen
 #   word is by guessing letters until either the word has been found or the number of lives is exhausted.
 # input: A text file containing a variety of words; characters.
