@@ -16,9 +16,6 @@ def import_dictionary(filename):
     min_size = 2
     max_size = 12
     try:
-        for i in range(min_size, max_size+1):
-            dictionary.update({i: []})
-
         dict_file = open(filename, 'r')
         words = dict_file.read().split('\n')
         dict_file.close()
@@ -26,7 +23,10 @@ def import_dictionary(filename):
             word = word.replace(' ', '')
             word_len = len(word)
             if min_size <= word_len <= max_size:
-                dictionary[word_len].append(word)
+                if word_len not in dictionary:
+                    dictionary.update({word_len: [word]})
+                else:
+                    dictionary[word_len].append(word)
             elif word_len > max_size:
                 dictionary[max_size].append(word)
 
