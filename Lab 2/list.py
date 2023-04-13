@@ -1,5 +1,4 @@
 def list_comprehension(old_list):
-    # Returns a list containing sums of consecutive terms in the input list
     return [x + y for x, y in zip(old_list, old_list[1:])]
 
 
