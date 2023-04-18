@@ -1,5 +1,5 @@
 # draws a tree
-import turtle
+import turtle as turtle
 
 
 # set the canvas window
