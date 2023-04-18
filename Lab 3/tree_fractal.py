@@ -1,5 +1,6 @@
 # draws a tree
 import turtle as turtle
+import time
 
 
 # set the canvas window
@@ -22,9 +23,20 @@ def set_pen(color):
 # draw a tree fractal using recursion
 def draw_tree(t, branch, angle, n):
     if n > 0:  # recursive step
-        pass
+        t.pensize(3)
+        t.forward(branch)
+        t.left(angle)
+        draw_tree(t, branch, angle, n-1)
+        t.right(2*angle)
+        t.pensize(1)
+        draw_tree(t, branch, angle, n-1)
+        t.left(angle)
+        t.backward(branch)
+
     else:  # base case
-        pass
+        t.right(90)
+        t.forward(2)
+        t.left(90)
 
 
 # main program
@@ -36,3 +48,4 @@ if __name__ == '__main__':
     t.left(90)
     t.pendown()
     draw_tree(t, 60, 20, 6)
+    time.sleep(10)

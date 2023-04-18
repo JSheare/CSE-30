@@ -3,12 +3,24 @@ import turtle as turtle
 
 # Generates polygons using iteration
 def polygon(size, n):
-    pass
+    t.pendown()
+    angle = 360/n
+    for i in range(n):
+        t.forward(size)
+        t.left(angle)
 
 
 # Generates polygons using recursion
 def polygon_recursive(size, n, level):
-    pass
+    t.pendown()
+    angle = 360/n
+    if level == 1:
+        t.forward(size)
+        t.left(angle)
+    else:
+        t.forward(size)
+        t.left(angle)
+        polygon_recursive(size, n, level-1)
 
 
 if __name__ == '__main__':
@@ -30,3 +42,5 @@ if __name__ == '__main__':
     t.color('red')
     t.pendown()
     polygon_recursive(100, 5, 5)  # should draw a red pentagon
+    t.penup()
+    t.home()
