@@ -35,7 +35,17 @@ def draw_tree(t, branch, angle, n):
 
     else:  # base case
         t.right(90)
-        t.forward(2)
+        t.forward(1)
+        t.left(90)
+
+        t.pencolor('green')
+        t.fillcolor('green')
+        t.dot(15)
+
+        t.pencolor('brown')
+        t.fillcolor('brown')
+        t.right(90)
+        t.forward(1)
         t.left(90)
 
 
