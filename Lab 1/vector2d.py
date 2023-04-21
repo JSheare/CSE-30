@@ -101,7 +101,7 @@ class Vector2D:
         if type(other) == type(self):
             x_new = self.x * other.x
             y_new = self.y * other.y
-            return Vector2D(x_new, y_new)
+            return Vector2D(x_new, y_new)  # should be x_new + y_new (scalar product)
         else:
             raise TypeError('TypeError: unsupported operand type')
 
