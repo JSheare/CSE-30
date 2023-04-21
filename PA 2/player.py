@@ -1,8 +1,8 @@
-# author:
-# date:
-# file: player.py
-# input:
-# output:
+# author: Jacob Shearer
+# date: 4/20/2023
+# file: player.py a python file containing the Player, AI, MiniMax, and SmartAI classes used in tictac.py
+# input: strings from the game and a Board instance from board.py
+# output: interactive text messages and game-related strings
 
 from random import choice
 

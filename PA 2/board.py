@@ -1,8 +1,8 @@
-# author:
-# date:
-# file: board.py
-# input:
-# output:
+# author: Jacob Shearer
+# date: 4/20/2023
+# file: board.py a python file containing the Board class used in tictac.py
+# input: strings from the game
+# output: bool values, strings, other game-related information, and the tic-tac-toe board itself
 
 
 class Board:
