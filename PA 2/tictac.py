@@ -16,7 +16,7 @@ while True:
     board = Board()
 
     player1 = Player("Bob", "X")
-    # player2 = Player("Alice", "O")
+    player2 = Player("Alice", "O")
 
     # player1 = AI('Bob', 'X', board)
     # player2 = AI('Alice', 'O', board)
@@ -25,7 +25,7 @@ while True:
     # player2 = MiniMax('Alice', 'O', board)
 
     # player1 = SmartAI('Bob', 'X', board)
-    player2 = SmartAI('Alice', 'O', board)
+    # player2 = SmartAI('Alice', 'O', board)
 
     turn = True
     while True:

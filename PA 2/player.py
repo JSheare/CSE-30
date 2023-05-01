@@ -1,5 +1,5 @@
 # author: Jacob Shearer
-# date: 4/20/2023
+# date: 5/1/2023
 # file: player.py a python file containing the Player, AI, MiniMax, and SmartAI classes used in tictac.py
 # input: strings from the game and a Board instance from board.py
 # output: interactive text messages and game-related strings
@@ -24,28 +24,21 @@ class Player:
         # Prompts the user to choose a cell
         # If the user enters a valid string and the cell on the board is empty, updates the board
         # Otherwise prints a message that the input is wrong and rewrites the prompt
-        cell = input(f'{self.name}, {self.sign}: Enter a cell [A-C][1-3]: \n')
-        # Cell must contain 2 characters
-        condition_1 = True if len(cell) == 2 else False
-        if condition_1:
-            # Cell must contain one letter and one number in the first and second positions respectively
-            condition_2 = True if cell[0].isalpha() and cell[1].isnumeric() else False
+        while True:
+            cell = input(f'{self.name}, {self.sign}: Enter a cell [A-C][1-3]: \n').upper()
+            # Cell must contain 2 characters
+            condition_1 = True if len(cell) == 2 else False
             # The cell letter must be either 'A', 'B', or 'C' and the number must be '1', '2', or '3'
-            condition_3 = True if cell[0].upper() in ['A', 'B', 'C'] and cell[1] in ['1', '2', '3'] else False
-        else:
-            condition_2 = False
-            condition_3 = False
+            condition_2 = True if cell[0] in ['A', 'B', 'C'] and cell[1] in ['1', '2', '3'] else False
+            if condition_1 and condition_2:  # Valid cell choice
+                if board.isempty(cell):
+                    board.set(cell, self.sign)
+                    break
+                else:
+                    print('You did not choose correctly.\n')
 
-        if condition_1 and condition_2 and condition_3:  # Valid cell choice
-            if board.isempty(cell.upper()):  # Recursion base condition
-                board.set(cell.upper(), self.sign)
             else:
                 print('You did not choose correctly.\n')
-                self.choose(board)
-
-        else:
-            print('You did not choose correctly.\n')
-            self.choose(board)
 
 
 class AI(Player):
@@ -137,7 +130,7 @@ class SmartAI(AI):
                 num_cells_occupied += 1
                 cells_occupied.append(cell)
 
-        # Starts on the corners OR in the middle (depending on availability) if only one cell is occupied
+        # Starts on the corners OR in the middle (depending on availability) if one cell or less is occupied
         if num_cells_occupied >= 8:
             for cell in ['B2', 'A1', 'C1', 'A3', 'C3']:
                 if board.isempty(cell):
@@ -151,7 +144,7 @@ class SmartAI(AI):
                 if keys:
                     return keys[0]
 
-            combos = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]]
+            combos = [[0, 4, 8], [2, 4, 6], [0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8]]
             opponent_sign = 'X' if self.sign == 'O' else 'O'
             # Prevent opponent from winning (this is given first priority)
             for combo in combos:
