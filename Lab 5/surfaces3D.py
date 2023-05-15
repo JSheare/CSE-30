@@ -28,13 +28,21 @@ plt.show()
 
 # Ellipsoid
 ax2 = plt.axes(projection='3d')
-r = np.linspace(0, 1, 30)
-t = np.linspace(0, 2*np.pi, 30)
-R, T = np.meshgrid(r, t)
-X = R * np.cos(T)
-Y = R * np.sin(T)
+t = np.linspace(0, np.pi, 30)
+p = np.linspace(0, 2*np.pi, 30)
+T, P = np.meshgrid(t, p)
+X = np.zeros((30, 30))
+Y = np.zeros((30, 30))
+Z = np.zeros((30, 30))
 a, b, c = 1, 1, 1
-Z = np.sqrt((c**2 * (1 - (X**2/a**2 + Y**2/b**2))))
+for i in range(30):
+    for j in range(30):
+        t_ang = T[i, j]
+        p_ang = P[i, j]
+        X[i, j] = a*np.sin(t_ang)*np.cos(p_ang)
+        Y[i, j] = b*np.sin(t_ang)*np.sin(p_ang)
+        Z[i, j] = c*np.cos(t_ang)
+
 ax2.contour3D(X, Y, Z, 50)
 ax2.set_title('Ellipsoid')
 plt.show()
