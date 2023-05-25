@@ -1,8 +1,8 @@
 # author: Jacob Shearer
-# date:
-# file:
-# input:
-# output:
+# date: 5/25/2023
+# file: game.py creates a GUI that allows the user to play a game of Fifteen
+# input: Mouse clicks
+# output: Fifteen board GUI
 
 from tkinter import *
 import tkinter.font as font

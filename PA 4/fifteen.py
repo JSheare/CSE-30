@@ -1,10 +1,9 @@
 # author: Jacob Shearer
-# date:
-# file:
-# input:
-# output:
+# date: 5/25/2023
+# file: fifteen.py implements the class necessary for a game of fifteen
+# input: strings
+# output: a game board
 
-import numpy as np
 from random import choice
 from graph import Graph
 
@@ -142,14 +141,101 @@ class Fifteen:
             print(s)
             print('+' + self.size*'---+')
 
-    # verify if the puzzle is solvable
+    # Verifies if the puzzle is solvable
     def is_solvable(self):
-        pass
+        # Makes a list corresponding to the board state
+        board_state = []
+        for vid in self.game_graph.getVertices():
+            vertex = self.game_graph.getVertex(vid)
+            if vertex.value == 0:
+                board_state.append(16)
+            else:
+                board_state.append(vertex.value)
 
-    # solve the puzzle
+        # Counts the number of inversions using bubble sort
+        inversions = 0
+        for i in range(len(board_state)-1, 0, -1):
+            for j in range(i):
+                if board_state[j] > board_state[j+1]:
+                    inversions += 1
+                    board_state[j], board_state[j+1] = board_state[j+1], board_state[j]
+
+        return True if inversions % 2 == 0 else False
+
+    def copy(self):
+        new_obj = Fifteen(size=self.size)
+        for vid in self.game_graph.getVertices():
+            vertex = self.game_graph.getVertex(vid)
+            new_vertex = new_obj.game_graph.getVertex(vid)
+            new_vertex.value = vertex.value
+            if new_vertex.value == 0:
+                new_obj.empty_tile_vertex = new_vertex
+
+        return new_obj
+
+    # Solves the puzzle
+    # My attempt at A*
     def solve(self):
-        pass
-    
+        queue = [(0, self, [])]
+        while len(queue) > 0:
+            state = queue.pop()
+            board_state = state[1]
+            move_list = state[2]
+            # Returns the required moves if the trial state is a winner
+            if board_state.is_solved():
+                return move_list
+            else:
+                possible_moves = list(board_state.empty_tile_vertex.getConnections())
+                for move in possible_moves:
+                    move_tile = move.value
+                    # Prevents the algorithm from making moves back to previous board states
+                    if len(move_list) > 0:
+                        if move_tile == move_list[-1]:
+                            continue
+
+                    # Makes a trial state copy of the board
+                    board_copy = board_state.copy()
+                    board_copy.update(move_tile)
+
+                    # Calculates the priority of the trial state with the Manhattan priority function
+                    priority = 0
+                    for vid in list(board_state.game_graph.getVertices()):
+                        vertex = board_copy.game_graph.getVertex(vid)
+                        if vertex.value == 0:  # Empty tile
+                            expected_vertical = self.size - 1
+                            expected_horizontal = self.size - 1
+                            vertical = (vertex.id-1)//self.size
+                            horizontal = (vertex.id - ((vertex.id-1)//self.size)*self.size - 1)
+                            priority += abs(expected_vertical - vertical) + abs(expected_horizontal - horizontal)
+
+                        else:
+                            expected_vertical = (vertex.value - 1) // self.size
+                            expected_horizontal = (vertex.value - ((vertex.value - 1) // self.size) * self.size - 1)
+                            vertical = (vertex.id - 1) // self.size
+                            horizontal = (vertex.id - ((vertex.id - 1) // self.size) * self.size - 1)
+                            priority += abs(expected_vertical - vertical) + abs(expected_horizontal - horizontal)
+
+                    priority += len(move_list) + 1
+                    # Adds the trial state to the priority queue
+                    not_enqueued = True
+                    for state in queue:
+                        if state[2] == move_list + [move_tile]:
+                            not_enqueued = False
+                            break
+
+                    if not_enqueued:
+                        queue.insert(0, (priority, board_copy, move_list + [move_tile]))
+
+                # Reorganizes the queue according to the trial states' priorities
+                priorities = [s[0] for s in queue]
+                for i in range(len(priorities)-1, 0, -1):
+                    for j in range(i):
+                        if priorities[j] > priorities[j+1]:
+                            priorities[j], priorities[j+1] = priorities[j+1], priorities[j]
+                            queue[j], queue[j+1] = queue[j+1], queue[j]
+
+                queue = queue[::-1]
+
 
 if __name__ == '__main__':
     

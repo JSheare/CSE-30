@@ -1,14 +1,13 @@
 # author: Jacob Shearer
-# date:
-# file:
-# input:
-# output:
+# date: 5/25/2023
+# file: graph.py implements the graph ADT
+# input: None
+# output: None
 
 class Vertex:
     def __init__(self, key):
         self.id = key
         self.connectedTo = {}
-        self.color = 'white'
         self.value = 0  # :(
 
     def addNeighbor(self, nbr, weight=0):
@@ -61,43 +60,42 @@ class Graph:
     def __iter__(self):
         return iter(self.vertList.values())
     
-    def breadth_first_search(self, s):
-        queue = [self.getVertex(s)]
-        keys = []
+    def breadth_first_search(self, vid):
+        queue = [self.getVertex(vid)]
+        path = []
         while len(queue) > 0:
             vertex = queue.pop()
-            if vertex.id not in keys:
-                keys.append(vertex.id)
+            if vertex.id not in path:
+                path.append(vertex.id)
 
             for connection in list(vertex.getConnections()):
-                if connection.id in keys:
+                if connection.id in path:
                     continue
 
                 queue.insert(0, connection)
 
-        return keys
+        return path
     
     def depth_first_search(self):
         start = self.vertList[list(self.getVertices())[0]]
-        keys = [start.id]
-
-        def explore(vertex):
-            if vertex.id not in keys:
-                keys.append(vertex.id)
-
-            for connection in list(vertex.getConnections()):
-                if connection.id in keys:
-                    continue
-
-                explore(connection)
+        path = [start.id]
 
         for connection in list(start.getConnections()):
-            explore(connection)
+            self.DFS(connection.id, path)
 
-        return keys
+        return path
     
-    def DFS(self, vid, path):  # What is this supposed to do?
-        pass
+    def DFS(self, vid, path):
+        if vid not in path:
+            path.append(vid)
+
+        for connection in list(self.getVertex(vid).getConnections()):
+            if connection.id in path:
+                continue
+
+            self.DFS(connection.id, path)
+
+        return path
 
 
 if __name__ == '__main__':
