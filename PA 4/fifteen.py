@@ -177,6 +177,7 @@ class Fifteen:
     # My attempt at A*
     def solve(self):
         queue = [(0, self, [])]
+        state_cache = []
         while len(queue) > 0:
             state = queue.pop()
             board_state = state[1]
@@ -198,9 +199,11 @@ class Fifteen:
                     board_copy.update(move_tile)
 
                     # Calculates the priority of the trial state with the Manhattan priority function
+                    current_state = []
                     priority = 0
                     for vid in list(board_state.game_graph.getVertices()):
                         vertex = board_copy.game_graph.getVertex(vid)
+                        current_state.append(vertex.value)
                         if vertex.value == 0:  # Empty tile
                             expected_vertical = self.size - 1
                             expected_horizontal = self.size - 1
@@ -217,14 +220,9 @@ class Fifteen:
 
                     priority += len(move_list) + 1
                     # Adds the trial state to the priority queue
-                    not_enqueued = True
-                    for state in queue:
-                        if state[2] == move_list + [move_tile]:
-                            not_enqueued = False
-                            break
-
-                    if not_enqueued:
+                    if current_state not in state_cache:
                         queue.insert(0, (priority, board_copy, move_list + [move_tile]))
+                        state_cache.append(current_state)
 
                 # Reorganizes the queue according to the trial states' priorities
                 priorities = [s[0] for s in queue]
@@ -235,6 +233,7 @@ class Fifteen:
                             queue[j], queue[j+1] = queue[j+1], queue[j]
 
                 queue = queue[::-1]
+                print(queue)
 
 
 if __name__ == '__main__':
@@ -257,6 +256,7 @@ if __name__ == '__main__':
     # You should be able to play the game if you uncomment the code below
     game = Fifteen(4)
     game.shuffle()
+    print(game.solve())
     game.draw()
     while True:
         move = input('Enter your move or q to quit: ')

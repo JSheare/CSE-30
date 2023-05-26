@@ -30,7 +30,7 @@ def solve_queens(n_queens):
         if valid_solution:
             q_solutions.append(r_solution)
 
-    return q_solutions
+    return sorted(q_solutions)
 
 
 if __name__ == '__main__':
