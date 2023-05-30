@@ -205,35 +205,38 @@ class Fifteen:
                         vertex = board_copy.game_graph.getVertex(vid)
                         current_state.append(vertex.value)
                         if vertex.value == 0:  # Empty tile
-                            expected_vertical = self.size - 1
-                            expected_horizontal = self.size - 1
-                            vertical = (vertex.id-1)//self.size
-                            horizontal = (vertex.id - ((vertex.id-1)//self.size)*self.size - 1)
-                            priority += abs(expected_vertical - vertical) + abs(expected_horizontal - horizontal)
-
+                            expected_vertical = self.size**2 - 1
+                            expected_horizontal = self.size**2 - 1
                         else:
                             expected_vertical = (vertex.value - 1) // self.size
                             expected_horizontal = (vertex.value - ((vertex.value - 1) // self.size) * self.size - 1)
-                            vertical = (vertex.id - 1) // self.size
-                            horizontal = (vertex.id - ((vertex.id - 1) // self.size) * self.size - 1)
-                            priority += abs(expected_vertical - vertical) + abs(expected_horizontal - horizontal)
+
+                        vertical = (vertex.id - 1) // self.size
+                        horizontal = (vertex.id - ((vertex.id - 1) // self.size) * self.size - 1)
+                        priority += abs(expected_vertical - vertical) + abs(expected_horizontal - horizontal)
 
                     priority += len(move_list) + 1
+
                     # Adds the trial state to the priority queue
-                    if current_state not in state_cache:
+                    not_enqueued = True
+                    for state in queue:
+                        if state[2] == move_list + [move_tile]:
+                            not_enqueued = False
+                            break
+
+                    if not_enqueued and (current_state not in state_cache):
                         queue.insert(0, (priority, board_copy, move_list + [move_tile]))
                         state_cache.append(current_state)
 
                 # Reorganizes the queue according to the trial states' priorities
                 priorities = [s[0] for s in queue]
-                for i in range(len(priorities)-1, 0, -1):
+                for i in range(len(priorities) - 1, 0, -1):
                     for j in range(i):
-                        if priorities[j] > priorities[j+1]:
-                            priorities[j], priorities[j+1] = priorities[j+1], priorities[j]
-                            queue[j], queue[j+1] = queue[j+1], queue[j]
+                        if priorities[j] > priorities[j + 1]:
+                            priorities[j], priorities[j + 1] = priorities[j + 1], priorities[j]
+                            queue[j], queue[j + 1] = queue[j + 1], queue[j]
 
                 queue = queue[::-1]
-                print(queue)
 
 
 if __name__ == '__main__':
