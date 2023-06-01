@@ -17,7 +17,7 @@ def solve(coefficients, interval, resolution=10e-2, tolerance=10e-6, threshold=1
         return total
 
     sign_check = lambda x: -1 if x < 0 else 1
-    n_sigfigs = abs(decimal.Decimal(str(tolerance)).as_tuple().exponent)
+    n_places = abs(decimal.Decimal(str(tolerance)).as_tuple().exponent)
     coefficients = [float(s) for s in coefficients.split()]
     interval = [float(s) for s in interval.split()]
     # Breaking the interval into sub-intervals
@@ -50,7 +50,7 @@ def solve(coefficients, interval, resolution=10e-2, tolerance=10e-6, threshold=1
 
                 if abs(right_edge - left_edge) < tolerance:
                     if abs(polynomial(x)) < threshold:
-                        roots.append(float((f'% .{n_sigfigs+1}f' % x)[0:-1]))
+                        roots.append(float((f'% .{n_places+1}f' % x)[0:-1]))
 
                     break
 
@@ -71,7 +71,7 @@ def solve(coefficients, interval, resolution=10e-2, tolerance=10e-6, threshold=1
                 if abs(right_edge - left_edge) < tolerance:
                     if abs(polynomial_deriv(x)) < threshold:
                         if abs(polynomial(x)) < threshold:
-                            roots.append(float((f'% .{n_sigfigs+1}f' % x)[0:-1]))
+                            roots.append(float((f'% .{n_places+1}f' % x)[0:-1]))
 
                     break
 
