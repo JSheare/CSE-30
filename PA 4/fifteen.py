@@ -6,6 +6,7 @@
 
 from random import choice
 from graph import Graph
+from priorityqueue import PriorityQueue
 
 
 class Fifteen:
@@ -176,12 +177,13 @@ class Fifteen:
     # Solves the puzzle
     # My attempt at A*
     def solve(self):
-        queue = [(0, self, [])]
         state_cache = []
-        while len(queue) > 0:
-            state = queue.pop()
-            board_state = state[1]
-            move_list = state[2]
+        priority_queue = PriorityQueue()
+        priority_queue.buildQueue([0], [(self, [])])
+        while priority_queue.currentSize > 0:
+            state = priority_queue.delMin()
+            board_state = state[0]
+            move_list = state[1]
             # Returns the required moves if the trial state is a winner
             if board_state.is_solved():
                 return move_list
@@ -218,25 +220,10 @@ class Fifteen:
                     priority += len(move_list) + 1
 
                     # Adds the trial state to the priority queue
-                    not_enqueued = True
-                    for state in queue:
-                        if state[2] == move_list + [move_tile]:
-                            not_enqueued = False
-                            break
 
-                    if not_enqueued and (current_state not in state_cache):
-                        queue.insert(0, (priority, board_copy, move_list + [move_tile]))
+                    if current_state not in state_cache:
+                        priority_queue.insert(priority, (board_copy, move_list + [move_tile]))
                         state_cache.append(current_state)
-
-                # Reorganizes the queue according to the trial states' priorities
-                priorities = [s[0] for s in queue]
-                for i in range(len(priorities) - 1, 0, -1):
-                    for j in range(i):
-                        if priorities[j] > priorities[j + 1]:
-                            priorities[j], priorities[j + 1] = priorities[j + 1], priorities[j]
-                            queue[j], queue[j + 1] = queue[j + 1], queue[j]
-
-                queue = queue[::-1]
 
 
 if __name__ == '__main__':
