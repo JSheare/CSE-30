@@ -8,7 +8,7 @@ from tkinter import *
 import tkinter.font as font
 
 WIDTH, HEIGHT = 600, 400
-CLOCK_RATE = 15
+CLOCK_RATE = 5
 START_X, START_Y = 20, 350
 END_X, END_Y = 400, 350
 
