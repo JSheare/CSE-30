@@ -22,7 +22,6 @@ class Skyland:
         self.canvas.bind_all('<KeyPress-space>', self.pause)
         self.canvas.bind_all('<KeyPress-Alt_L>', self.restart)
         self.paused = False
-        self.pause_text = None
 
         self.score = 0
         self.time = 0
@@ -35,14 +34,19 @@ class Skyland:
         self.update()
 
     def restart(self, event=None):
+        self.pause()
+        self.canvas.after(CLOCK_RATE, self.pause)
         self.avatar.replace()
         self.trophy.replace()
+        self.score = 0
+        self.time = 0
         self.update()
         
     def pause(self, event=None):
         if not self.paused:
             self.paused = True
         else:
+
             self.paused = False
             self.update()
 
@@ -84,14 +88,19 @@ class Land:
 
         # Big tree branches
         platform4 = self.canvas.create_rectangle(0, START_Y - 200, 150, START_Y - 193, fill='coral')
-        platform5 = self.canvas.create_rectangle(WIDTH - 100, START_Y - 200, WIDTH, START_Y-193, fill='coral')
+        platform5 = self.canvas.create_rectangle(WIDTH - 100, START_Y - 240, WIDTH, START_Y-233, fill='coral')
         platform6 = self.canvas.create_rectangle(0, START_Y - 100, 50, START_Y - 95, fill='coral')
 
         # Small Tree Trunks
         platform7 = self.canvas.create_rectangle(115, START_Y - 95, 120, START_Y, fill='coral')
         platform8 = self.canvas.create_rectangle(315, START_Y - 205, 320, START_Y - 110, fill='coral')
 
-        self.platforms = [platform1, platform2, platform3, platform4, platform5, platform6, platform7, platform8]
+        # Moving platform
+        platform9 = self.canvas.create_rectangle(300, START_Y - 280, 335, START_Y - 275, fill='coral')
+
+        self.platforms = [platform1, platform2, platform3, platform4,
+                          platform5, platform6, platform7, platform8,
+                          platform9]
 
         self.start = self.canvas.create_rectangle(0, 0, 10, START_Y, fill='coral')
         self.stop = self.canvas.create_rectangle(WIDTH-10, 0, WIDTH+3, START_Y, fill='coral')
@@ -208,21 +217,17 @@ class Avatar:
 
         self.x = 1
         self.y = 0
-        self.acceleration = 0.05  # gravitational acceleration in units of distance units/clock tick squared
-        self.fallspeed = 0
-        self.jumping = False
+        self.acceleration = 0.019  # gravitational acceleration
+        self.can_jump = False
     
     def update(self, land, trophy):  # call find_trophy and hit_object, check if jumping up or falling, etc.
-
         for object in land.get_obstacles():
             self.hit_object(object)
 
-        if self.jumping:
-            self.y = self.fallspeed
-            self.fallspeed += self.acceleration
-
         self.canvas.move(self.head, self.x, self.y)
         self.canvas.move(self.torso, self.x, self.y)
+
+        self.y += self.acceleration
 
     def move(self, event=None):
         if event.keysym == 'Left':
@@ -230,34 +235,40 @@ class Avatar:
         elif event.keysym == 'Right':
             self.x = 1
         elif event.keysym == 'Up':  # jumping
-            if not self.jumping:
-                self.fallspeed = -2
-                self.jumping = True
+            if self.can_jump:
+                self.y = -2
+                self.can_jump = False
         elif event.keysym == 'Down':
             self.y = 1
    
     def hit_object(self, obj):
-        x1, y1, dummyx2, dummyy2 = self.canvas.coords(self.head)
-        dummyx1, dummyy1, x2, y2 = self.canvas.coords(self.torso)
-        ox1, oy1, ox2, oy2 = self.canvas.coords(obj)
-        if (ox1 <= x1 <= ox2 and oy1 <= y1 <= oy2) or (ox1 <= x2 <= ox2 and oy1 <= y2 <= oy2):
-            # Top collision
-            if y1 < oy1 <= y2 <= oy2:
-                self.y = -1
-                self.jumping = False
-                self.fallspeed = 0
-            # Bottom collision
-            elif oy1 <= y1 <= oy2 < y2:
-                self.y = 1
-            # Left collision
-            elif ox1 <= x2 <= ox2:
-                self.x = -1
-            # Right collision
-            elif ox1 <= x1 <= ox2:
-                self.x = 1
+        for appendage in [self.head, self.torso]:
+            x1, y1, x2, y2 = self.canvas.coords(appendage)
+            ox1, oy1, ox2, oy2 = self.canvas.coords(obj)
+            if (ox1 <= x1 <= ox2 and oy1 <= y1 <= oy2) or (ox1 <= x2 <= ox2 and oy1 <= y2 <= oy2) or \
+                    (ox1 <= x1 <= ox2 and oy1 <= y2 <= oy2) or (ox1 <= x2 <= ox2 and oy1 <= y2 <= oy2):
+                # Top collision
+                if y1 < oy1 <= y2 <= oy2:
+                    self.y = -0.12
+                    self.can_jump = True
+                # Bottom collision
+                elif oy1 <= y1 <= oy2 < y2:
+                    self.y = 1
+                # Left collision
+                elif ox1 <= x2 <= ox2:
+                    self.x = -1
+                # Right collision
+                elif ox1 <= x1 <= ox2:
+                    self.x = 1
     
     def find_trophy(self, trophy):
         pass
+
+    def replace(self):
+        self.x = 1
+        self.y = 0
+        self.canvas.moveto(self.head, START_X, START_Y - 26)
+        self.canvas.moveto(self.torso, START_X, START_Y - 16)
 
 
 if __name__ == '__main__':
