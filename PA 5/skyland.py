@@ -1,16 +1,13 @@
 # cse30
 # pa5
 # skyland.py - a one-level platform video game
-# author:
-# date:
+# author: Jacob Shearer
+# date: 6/6/2023
 
 from tkinter import *
 import tkinter.font as font
-from random import random, randint # optional
-from math import sin, cos, pi # optional
 
-
-WIDTH, HEIGHT = 600, 400  # global variables (constants) go here
+WIDTH, HEIGHT = 600, 400
 CLOCK_RATE = 15
 START_X, START_Y = 20, 350
 END_X, END_Y = 400, 350
@@ -28,7 +25,9 @@ class Skyland:
         self.land = Land(canvas)
         self.trophy = Trophy(canvas)
         self.avatar = Avatar(canvas)
-        self.text = canvas.create_text(150, 370, text=f'Score {self.score}  Time {self.time} ',
+        self.spider1 = AI(canvas, 75, 110)
+        self.spider2 = AI(canvas, 510, 305)
+        self.text = canvas.create_text(150, 370, text=f'Score {self.avatar.score}  Time {self.time} ',
                                        font=font.Font(family='Helveca', size=15, weight='bold'))
 
         self.update()
@@ -38,10 +37,20 @@ class Skyland:
         self.canvas.after(CLOCK_RATE, self.pause)
         self.avatar.replace()
         self.trophy.replace()
-        self.score = 0
+        self.avatar.score = 0
         self.time = 0
+        if self.avatar.death_mask is not None:
+            for item in self.avatar.death_mask:
+                self.canvas.delete(item)
+
+            self.avatar.dead = False
+            self.avatar.death_mask = None
+
+        self.canvas.delete(self.text)
+        self.text = canvas.create_text(150, 370, text=f'Score {self.avatar.score}  Time {"% .2f" % self.time} ',
+                                       font=font.Font(family='Helveca', size=15, weight='bold'))
         self.update()
-        
+
     def pause(self, event=None):
         if not self.paused:
             self.paused = True
@@ -54,12 +63,31 @@ class Skyland:
         if not self.paused:
             self.avatar.update(self.land, self.trophy)
             self.land.update()
-            self.canvas.after(CLOCK_RATE, self.update)
+            self.avatar.find_trophy(self.trophy)
+            self.spider1.update(self.avatar, self.land)
+            self.spider2.update(self.avatar, self.land)
+            if self.avatar.score == 6:
+                self.pause()
+                self.canvas.delete(self.text)
+                self.text = canvas.create_text(150, 370,
+                                               text=11*' ' + f'Score {self.avatar.score}  Time {"% .2f" % self.time} ' +
+                                                              '   You win!',
+                                               font=font.Font(family='Helveca', size=15, weight='bold'))
+            elif self.avatar.dead:
+                self.avatar.kill()
+                self.canvas.delete(self.text)
+                self.text = canvas.create_text(150, 370,
+                                               text=15*' ' + f'Score {self.avatar.score}  Time {"% .2f" % self.time} ' +
+                                                    "   You've died.",
+                                               font=font.Font(family='Helveca', size=15, weight='bold'))
 
-            self.time += CLOCK_RATE * 1e-3
-            self.canvas.delete(self.text)
-            self.text = canvas.create_text(150, 370, text=f'Score {self.score}  Time {"% .2f" % self.time} ',
-                                           font=font.Font(family='Helveca', size=15, weight='bold'))
+            else:
+                self.canvas.after(CLOCK_RATE, self.update)
+
+                self.time += CLOCK_RATE * 1e-3
+                self.canvas.delete(self.text)
+                self.text = canvas.create_text(150, 370, text=f'Score {self.avatar.score}  Time {"% .2f" % self.time} ',
+                                               font=font.Font(family='Helveca', size=15, weight='bold'))
 
 
 class Land:
@@ -67,10 +95,10 @@ class Land:
         self.canvas = canvas
 
         # sky
-        self.canvas.create_rectangle(0, 0, WIDTH, START_Y-100, fill='lightblue')
+        self.canvas.create_rectangle(0, 0, WIDTH, START_Y - 100, fill='lightblue')
         # valley
-        self.canvas.create_rectangle(0, START_Y-120, WIDTH, START_Y, fill='limegreen')
-        
+        self.canvas.create_rectangle(0, START_Y - 120, WIDTH, START_Y, fill='limegreen')
+
         self.make_hill(50, 230, 250, 230, height=100, delta=3)
         self.make_hill(150, 300, 350, 300, height=100, delta=3)
         self.make_hill(250, 250, 450, 250, height=100, delta=3)
@@ -88,7 +116,7 @@ class Land:
 
         # Big tree branches
         platform4 = self.canvas.create_rectangle(0, START_Y - 200, 150, START_Y - 193, fill='coral')
-        platform5 = self.canvas.create_rectangle(WIDTH - 100, START_Y - 240, WIDTH, START_Y-233, fill='coral')
+        platform5 = self.canvas.create_rectangle(WIDTH - 100, START_Y - 240, WIDTH, START_Y - 233, fill='coral')
         platform6 = self.canvas.create_rectangle(0, START_Y - 100, 50, START_Y - 95, fill='coral')
 
         # Small Tree Trunks
@@ -97,42 +125,48 @@ class Land:
 
         # Moving platform
         platform9 = self.canvas.create_rectangle(300, START_Y - 280, 335, START_Y - 275, fill='coral')
+        self.platform_x = 0.5
 
         self.platforms = [platform1, platform2, platform3, platform4,
                           platform5, platform6, platform7, platform8,
                           platform9]
 
         self.start = self.canvas.create_rectangle(0, 0, 10, START_Y, fill='coral')
-        self.stop = self.canvas.create_rectangle(WIDTH-10, 0, WIDTH+3, START_Y, fill='coral')
-        self.ground = self.canvas.create_rectangle(0, START_Y-5, WIDTH, START_Y, fill='coral')
+        self.stop = self.canvas.create_rectangle(WIDTH - 10, 0, WIDTH + 3, START_Y, fill='coral')
+        self.ground = self.canvas.create_rectangle(0, START_Y - 5, WIDTH, START_Y, fill='coral')
 
     def make_hill(self, x1, y1, x2, y2, height=100, delta=3):
         x_diff = 0
         y_diff = 0
-        for i in range(int(height/delta) + 1):
-            self.canvas.create_rectangle(x1+x_diff, y1-y_diff, x2-x_diff, y2+delta-y_diff, fill='brown', outline='')
+        for i in range(int(height / delta) + 1):
+            self.canvas.create_rectangle(x1 + x_diff, y1 - y_diff, x2 - x_diff, y2 + delta - y_diff, fill='brown',
+                                         outline='')
             x_diff += delta
             y_diff += delta
 
     def make_cloud(self, x, y):
         diameter = 15
         diff = -20
-        diff_size = abs(diff)/2
+        diff_size = abs(diff) / 2
         id_list = []
         for i in range(5):
+            # Tips of the cloud
             if abs(diff) == diff_size * 2:
-                id = self.canvas.create_oval(x - diameter/2 + diff, y - diameter/2, x + diameter/2 + diff,
-                                             y + diameter/2, fill="white")
+                id = self.canvas.create_oval(x - diameter / 2 + diff, y - diameter / 2, x + diameter / 2 + diff,
+                                             y + diameter / 2, fill="white")
                 id_list.append(id)
                 diff += diff_size
                 continue
+            # Body ofthe cloud
             else:
-                id1 = self.canvas.create_oval(x - diameter/2 + diff, y - diameter/2 - diff_size, x + diameter/2 + diff,
-                                              y + diameter/2 - diff_size, fill="white")
-                id2 = self.canvas.create_oval(x - diameter/2 + diff, y - diameter/2, x + diameter/2 + diff,
-                                              y + diameter/2, fill="white")
-                id3 = self.canvas.create_oval(x - diameter/2 + diff, y - diameter/2 + diff_size, x + diameter/2 + diff,
-                                              y + diameter/2 + diff_size, fill="white")
+                id1 = self.canvas.create_oval(x - diameter / 2 + diff, y - diameter / 2 - diff_size,
+                                              x + diameter / 2 + diff,
+                                              y + diameter / 2 - diff_size, fill="white")
+                id2 = self.canvas.create_oval(x - diameter / 2 + diff, y - diameter / 2, x + diameter / 2 + diff,
+                                              y + diameter / 2, fill="white")
+                id3 = self.canvas.create_oval(x - diameter / 2 + diff, y - diameter / 2 + diff_size,
+                                              x + diameter / 2 + diff,
+                                              y + diameter / 2 + diff_size, fill="white")
 
                 id_list += [id1, id2, id3]
                 diff += diff_size
@@ -141,7 +175,7 @@ class Land:
 
     def get_obstacles(self):
         return [self.ground, self.start, self.stop] + self.platforms
-    
+
     def update(self):
         # Moving the clouds
         cloud_speed = 0.1
@@ -150,9 +184,18 @@ class Land:
             for id in cloud:
                 x1, y1, x2, y2 = self.canvas.coords(id)
                 if x1 >= canvas_width:
-                    self.canvas.moveto(id, 0 - abs(x2-x1), y1)
+                    self.canvas.moveto(id, 0 - abs(x2 - x1), y1)
 
                 self.canvas.move(id, cloud_speed, 0)
+
+        # Moving the oscillating platform
+        platform_leftbound = 200
+        platform_rightbound = 430
+        x1, y1, x2, y2 = self.canvas.coords(self.platforms[-1])
+        if x1 <= platform_leftbound or x2 >= platform_rightbound:
+            self.platform_x = -self.platform_x
+
+        self.canvas.move(self.platforms[-1], self.platform_x, 0)
 
 
 class Trophy:
@@ -160,44 +203,103 @@ class Trophy:
         self.canvas = canvas
         purple_egg = self.canvas.create_oval(0, 0, 20, 10, fill='orchid')
         pink_egg = self.canvas.create_oval(0, 0, 20, 10, fill='pink')
-        
-        self.trophies = [purple_egg, pink_egg]
+        blue_egg = self.canvas.create_oval(0, 0, 20, 10, fill='blue')
+        red_egg = self.canvas.create_oval(0, 0, 20, 10, fill='red')
+        yellow_egg = self.canvas.create_oval(0, 0, 20, 10, fill='yellow')
+        light_blue_egg = self.canvas.create_oval(0, 0, 20, 10, fill='light sky blue')
+
+        # Moves eggs to initial positions
+        self.canvas.moveto(purple_egg, 10, START_Y - 212)
+        self.canvas.moveto(pink_egg, 115, START_Y - 95)
+        self.canvas.moveto(blue_egg, 25, START_Y - 112)
+        self.canvas.moveto(blue_egg, 25, START_Y - 112)
+        self.canvas.moveto(red_egg, 293, START_Y - 205)
+        self.canvas.moveto(yellow_egg, 320, START_Y - 42)
+        self.canvas.moveto(light_blue_egg, WIDTH - 50, START_Y - 252)
+
+        self.trophies = [purple_egg, pink_egg, blue_egg, red_egg, yellow_egg, light_blue_egg]
 
     def get_trophy(self):
         return self.trophies
 
     def replace(self):
-        pass
+        # Places each egg back in its original position (in order)
+        self.canvas.moveto(self.trophies[0], 10, START_Y - 212)
+        self.canvas.moveto(self.trophies[1], 115, START_Y - 95)
+        self.canvas.moveto(self.trophies[2], 25, START_Y - 112)
+        self.canvas.moveto(self.trophies[3], 293, START_Y - 205)
+        self.canvas.moveto(self.trophies[4], 320, START_Y - 42)
+        self.canvas.moveto(self.trophies[5], WIDTH - 50, START_Y - 252)
 
 
 class AI:
     def __init__(self, canvas, x, y):
         self.canvas = canvas
         self.spider = self.make_spider(x, y)
-        self.thread = self.canvas.create_line(x+10, 0, x+10, y+5, fill='ivory2', width=3)
-        self.x, self.y = 0, 0.5
+        self.thread = self.canvas.create_line(x + 10, 0, x + 10, y + 5, fill='ivory2', width=3)
+        self.y = 0.5
+        self.prev_y = 0
+        self.movement_counter = 0
 
     def make_spider(self, x, y):
-
         color1 = 'black'
         head = canvas.create_oval(5, 5, 15, 13, fill=color1)
         torso = canvas.create_oval(0, 10, 20, 40, fill=color1)
-        legs = [canvas.create_line(-5-i*5, 10*i+5, 5, 10*i+15,
+        legs = [canvas.create_line(-5 - i * 5, 10 * i + 5, 5, 10 * i + 15,
                                    fill=color1, width=4) for i in range(2)] + \
-               [canvas.create_line(15, 10*i+15, 25+i*5, 10*i+5,
+               [canvas.create_line(15, 10 * i + 15, 25 + i * 5, 10 * i + 5,
                                    fill=color1, width=4) for i in range(2)] + \
-               [canvas.create_line(-10+i*5, 10*i+35, 5, 10*i+25,
+               [canvas.create_line(-10 + i * 5, 10 * i + 35, 5, 10 * i + 25,
                                    fill=color1, width=4) for i in range(2)] + \
-               [canvas.create_line(15, 10*i+25, 30-i*5, 10*i+35,
+               [canvas.create_line(15, 10 * i + 25, 30 - i * 5, 10 * i + 35,
                                    fill=color1, width=4) for i in range(2)]
-                 
+
         spider = [head, torso] + legs
         for part in spider:
             self.canvas.move(part, x, y)
         return spider
 
-    def update(self, eatable):
-        pass
+    def update(self, avatar, land):
+        # Makes the spider lunge at the avatar
+        X1, Y1, X2, Y2 = self.canvas.coords(avatar.torso)
+        x1, y1, x2, y2 = self.canvas.coords(self.spider[1])
+        if X1 <= x1 <= X2 or X1 <= x2 <= X2:
+            if y2 >= Y2:
+                self.y = -1
+            else:
+                self.y = 1
+
+        # Checks to see if the avatar has been captured
+        if (X1 <= x1 <= X2 and Y1 <= y1 <= Y2) or (X1 <= x2 <= X2 and Y1 <= y2 <= Y2) or \
+                (X1 <= x1 <= X2 and Y1 <= y2 <= Y2) or (X1 <= x2 <= X2 and Y1 <= y2 <= Y2):
+            avatar.dead = True
+
+        closeness = 3
+        for obstacle in land.get_obstacles():
+            ox1, oy1, ox2, oy2 = self.canvas.coords(obstacle)
+            # Potential collision from the top
+            if oy1 <= (y2 + closeness) <= oy2 and (ox1 <= x1 <= ox2 or ox1 <= x2 <= ox2):
+                self.y = -0.5
+                self.prev_y = -0.5
+                self.movement_counter += 1
+
+            # Potential collision from the bottom
+            elif oy1 <= (y1 - closeness) <= oy2 and (ox1 <= x1 <= ox2 or ox1 <= x2 <= ox2):
+                self.y = 0.5
+                self.prev_y = 0.5
+                self.movement_counter += 1
+
+        if 0 < self.movement_counter < 140:
+            self.y = self.prev_y
+            self.movement_counter += 1
+
+        if self.movement_counter >= 140:
+            self.y = 0
+            self.prev_y = 0
+            self.movement_counter = 0
+
+        for part in self.spider:
+            self.canvas.move(part, 0, self.y)
 
 
 class Avatar:
@@ -205,11 +307,14 @@ class Avatar:
         color1 = 'lime'
         color2 = 'sandybrown'
         self.canvas = canvas
+        self.score = 0
+        self.dead = False
+        self.death_mask = None
         self.head = self.canvas.create_oval(0, 0, 10, 10, fill=color2)
         self.torso = self.canvas.create_rectangle(0, 10, 10, 20,
                                                   fill=color1)
-        self.canvas.move(self.head, START_X, START_Y-26)
-        self.canvas.move(self.torso, START_X, START_Y-26)
+        self.canvas.move(self.head, START_X, START_Y - 26)
+        self.canvas.move(self.torso, START_X, START_Y - 26)
         self.canvas.bind_all('<KeyPress-Left>', self.move)
         self.canvas.bind_all('<KeyPress-Right>', self.move)
         self.canvas.bind_all('<KeyPress-Up>', self.move)
@@ -219,7 +324,7 @@ class Avatar:
         self.y = 0
         self.acceleration = 0.019  # gravitational acceleration
         self.can_jump = False
-    
+
     def update(self, land, trophy):  # call find_trophy and hit_object, check if jumping up or falling, etc.
         for object in land.get_obstacles():
             self.hit_object(object)
@@ -240,7 +345,7 @@ class Avatar:
                 self.can_jump = False
         elif event.keysym == 'Down':
             self.y = 1
-   
+
     def hit_object(self, obj):
         for appendage in [self.head, self.torso]:
             x1, y1, x2, y2 = self.canvas.coords(appendage)
@@ -260,9 +365,16 @@ class Avatar:
                 # Right collision
                 elif ox1 <= x1 <= ox2:
                     self.x = 1
-    
+
     def find_trophy(self, trophy):
-        pass
+        trophies = trophy.get_trophy()
+        for trophy in trophies:
+            X1, Y1, X2, Y2 = self.canvas.coords(trophy)
+            x1, y1, x2, y2 = self.canvas.coords(self.torso)
+            if (X1 <= x1 <= X2 and Y1 <= y1 <= Y2) or (X1 <= x1 <= X2 and Y1 <= y1 <= Y2) or \
+                    (X1 <= x2 <= X2 and Y1 <= y1 <= Y2) or (X1 <= x2 <= X2 and Y1 <= y2 <= Y2):
+                self.score += 1
+                self.canvas.moveto(trophy, -30, -30)
 
     def replace(self):
         self.x = 1
@@ -270,9 +382,15 @@ class Avatar:
         self.canvas.moveto(self.head, START_X, START_Y - 26)
         self.canvas.moveto(self.torso, START_X, START_Y - 16)
 
+    def kill(self):
+        hx1, hy1, hx2, hy2 = self.canvas.coords(self.head)
+        tx1, ty1, tx2, ty2 = self.canvas.coords(self.torso)
+        head = self.canvas.create_oval(hx1, hy1, hx2, hy2, fill='red')
+        torso = self.canvas.create_rectangle(tx1, ty1, tx2, ty2, fill='red')
+        self.death_mask = [head, torso]
+
 
 if __name__ == '__main__':
-    
     tk = Tk()
     tk.title('Skyland')
     canvas = Canvas(tk, width=WIDTH, height=HEIGHT)
