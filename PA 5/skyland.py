@@ -19,6 +19,7 @@ class Skyland:
         self.canvas.bind_all('<KeyPress-space>', self.pause)
         self.canvas.bind_all('<KeyPress-Alt_L>', self.restart)
         self.paused = False
+        self.done = False
 
         self.score = 0
         self.time = 0
@@ -26,13 +27,14 @@ class Skyland:
         self.trophy = Trophy(canvas)
         self.avatar = Avatar(canvas)
         self.spider1 = AI(canvas, 75, 110)
-        self.spider2 = AI(canvas, 510, 305)
+        self.spider2 = AI(canvas, 500, 305)
         self.text = canvas.create_text(150, 370, text=f'Score {self.avatar.score}  Time {self.time} ',
                                        font=font.Font(family='Helveca', size=15, weight='bold'))
 
         self.update()
 
     def restart(self, event=None):
+        self.paused = False
         self.pause()
         self.canvas.after(CLOCK_RATE, self.pause)
         self.avatar.replace()
@@ -49,6 +51,7 @@ class Skyland:
         self.canvas.delete(self.text)
         self.text = canvas.create_text(150, 370, text=f'Score {self.avatar.score}  Time {"% .2f" % self.time} ',
                                        font=font.Font(family='Helveca', size=15, weight='bold'))
+        self.done = False
         self.update()
 
     def pause(self, event=None):
@@ -60,27 +63,31 @@ class Skyland:
             self.update()
 
     def update(self):
-        if not self.paused:
+        if not self.paused and not self.done:
             self.avatar.update(self.land, self.trophy)
             self.land.update()
             self.avatar.find_trophy(self.trophy)
             self.spider1.update(self.avatar, self.land)
             self.spider2.update(self.avatar, self.land)
+            # Finish the game once the avatar finds all the eggs
             if self.avatar.score == 6:
                 self.pause()
+                self.done = True
                 self.canvas.delete(self.text)
                 self.text = canvas.create_text(150, 370,
                                                text=11*' ' + f'Score {self.avatar.score}  Time {"% .2f" % self.time} ' +
                                                               '   You win!',
                                                font=font.Font(family='Helveca', size=15, weight='bold'))
+            # Finish the game if the avatar is killed by a spider
             elif self.avatar.dead:
                 self.avatar.kill()
+                self.done = True
                 self.canvas.delete(self.text)
                 self.text = canvas.create_text(150, 370,
                                                text=15*' ' + f'Score {self.avatar.score}  Time {"% .2f" % self.time} ' +
                                                     "   You've died.",
                                                font=font.Font(family='Helveca', size=15, weight='bold'))
-
+            # Update the game normally
             else:
                 self.canvas.after(CLOCK_RATE, self.update)
 
@@ -125,7 +132,7 @@ class Land:
 
         # Moving platform
         platform9 = self.canvas.create_rectangle(300, START_Y - 280, 335, START_Y - 275, fill='coral')
-        self.platform_x = 0.5
+        self.platform_x = 0.9
 
         self.platforms = [platform1, platform2, platform3, platform4,
                           platform5, platform6, platform7, platform8,
@@ -134,6 +141,56 @@ class Land:
         self.start = self.canvas.create_rectangle(0, 0, 10, START_Y, fill='coral')
         self.stop = self.canvas.create_rectangle(WIDTH - 10, 0, WIDTH + 3, START_Y, fill='coral')
         self.ground = self.canvas.create_rectangle(0, START_Y - 5, WIDTH, START_Y, fill='coral')
+
+        # Decoration
+        # Nests
+        self.canvas.create_line(110, START_Y - 85, 125, START_Y - 80, 140, START_Y - 85,
+                                smooth=True, fill='brown', width=5)  # Pink egg
+        self.canvas.create_line(288, START_Y - 195, 303, START_Y - 190, 318, START_Y - 195,
+                                smooth=True, fill='brown', width=5)  # Red egg
+        self.canvas.create_line(WIDTH-55, START_Y - 242, WIDTH-40, START_Y - 237, WIDTH-25, START_Y - 242,
+                                smooth=True, fill='brown', width=5)  # Light blue egg
+
+        # Left small tree leaves
+        self.canvas.create_line(115, START_Y - 95, 85, START_Y - 65, fill='green', width=5)
+        self.canvas.create_line(115, START_Y - 85, 85, START_Y - 55, fill='green', width=5)
+        self.canvas.create_line(115, START_Y - 75, 85, START_Y - 45, fill='green', width=5)
+        self.canvas.create_line(115, START_Y - 65, 85, START_Y - 35, fill='green', width=5)
+        self.canvas.create_line(115, START_Y - 55, 85, START_Y - 25, fill='green', width=5)
+        self.canvas.create_line(115, START_Y - 45, 85, START_Y - 15, fill='green', width=5)
+
+        self.canvas.create_line(120, START_Y - 95, 150, START_Y - 65, fill='green', width=5)
+        self.canvas.create_line(120, START_Y - 85, 150, START_Y - 55, fill='green', width=5)
+        self.canvas.create_line(120, START_Y - 75, 150, START_Y - 45, fill='green', width=5)
+        self.canvas.create_line(120, START_Y - 65, 150, START_Y - 35, fill='green', width=5)
+        self.canvas.create_line(120, START_Y - 55, 150, START_Y - 25, fill='green', width=5)
+        self.canvas.create_line(120, START_Y - 45, 150, START_Y - 15, fill='green', width=5)
+
+        # Middle small tree leaves
+        self.canvas.create_line(315, START_Y - 205, 285, START_Y - 175, fill='green', width=5)
+        self.canvas.create_line(315, START_Y - 195, 285, START_Y - 165, fill='green', width=5)
+        self.canvas.create_line(315, START_Y - 185, 285, START_Y - 155, fill='green', width=5)
+        self.canvas.create_line(315, START_Y - 175, 285, START_Y - 145, fill='green', width=5)
+        self.canvas.create_line(315, START_Y - 165, 285, START_Y - 135, fill='green', width=5)
+        self.canvas.create_line(315, START_Y - 155, 285, START_Y - 125, fill='green', width=5)
+
+        self.canvas.create_line(320, START_Y - 205, 350, START_Y - 175, fill='green', width=5)
+        self.canvas.create_line(320, START_Y - 195, 350, START_Y - 165, fill='green', width=5)
+        self.canvas.create_line(320, START_Y - 185, 350, START_Y - 155, fill='green', width=5)
+        self.canvas.create_line(320, START_Y - 175, 350, START_Y - 145, fill='green', width=5)
+        self.canvas.create_line(320, START_Y - 165, 350, START_Y - 135, fill='green', width=5)
+        self.canvas.create_line(320, START_Y - 155, 350, START_Y - 125, fill='green', width=5)
+
+        # Big left tree leaves
+        self.canvas.create_line(10, 100, 60, 125, 150, 110, smooth=True, fill='green', width=10)
+        self.canvas.create_line(10, 70, 50, 95, 120, 80, smooth=True, fill='green', width=10)
+        self.canvas.create_line(10, 40, 40, 65, 90, 50, smooth=True, fill='green', width=10)
+        self.canvas.create_line(10, 10, 30, 35, 70, 20, smooth=True, fill='green', width=10)
+
+        # Big right tree leaves
+        self.canvas.create_line(WIDTH-10, 70, WIDTH-50, 95, WIDTH-120, 80, smooth=True, fill='green', width=10)
+        self.canvas.create_line(WIDTH-10, 40, WIDTH-40, 65, WIDTH-90, 50, smooth=True, fill='green', width=10)
+        self.canvas.create_line(WIDTH-10, 10, WIDTH-30, 35, WIDTH-70, 20, smooth=True, fill='green', width=10)
 
     def make_hill(self, x1, y1, x2, y2, height=100, delta=3):
         x_diff = 0
@@ -157,7 +214,7 @@ class Land:
                 id_list.append(id)
                 diff += diff_size
                 continue
-            # Body ofthe cloud
+            # Body of the cloud
             else:
                 id1 = self.canvas.create_oval(x - diameter / 2 + diff, y - diameter / 2 - diff_size,
                                               x + diameter / 2 + diff,
@@ -265,11 +322,11 @@ class AI:
         x1, y1, x2, y2 = self.canvas.coords(self.spider[1])
         if X1 <= x1 <= X2 or X1 <= x2 <= X2:
             if y2 >= Y2:
-                self.y = -1
+                self.y = -2
             else:
-                self.y = 1
+                self.y = 2
 
-        # Checks to see if the avatar has been captured
+        # Checks to see if the avatar has been killed
         if (X1 <= x1 <= X2 and Y1 <= y1 <= Y2) or (X1 <= x2 <= X2 and Y1 <= y2 <= Y2) or \
                 (X1 <= x1 <= X2 and Y1 <= y2 <= Y2) or (X1 <= x2 <= X2 and Y1 <= y2 <= Y2):
             avatar.dead = True
@@ -289,6 +346,7 @@ class AI:
                 self.prev_y = 0.5
                 self.movement_counter += 1
 
+        # The movement_counter is basically an attack cooldown
         if 0 < self.movement_counter < 140:
             self.y = self.prev_y
             self.movement_counter += 1
@@ -322,7 +380,7 @@ class Avatar:
 
         self.x = 1
         self.y = 0
-        self.acceleration = 0.019  # gravitational acceleration
+        self.acceleration = 0.020  # gravitational acceleration
         self.can_jump = False
 
     def update(self, land, trophy):  # call find_trophy and hit_object, check if jumping up or falling, etc.
