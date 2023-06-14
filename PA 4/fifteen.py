@@ -244,7 +244,7 @@ if __name__ == '__main__':
     # assert game.is_solved() is False
 
     # You should be able to play the game if you uncomment the code below
-    game = Fifteen(3)
+    game = Fifteen(4)
     game.shuffle()
     print(game.solve())
     game.draw()
